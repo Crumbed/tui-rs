@@ -10,7 +10,8 @@ use std::io::Stdout;
 use std::io::Write;
 
 use crate::Vec2;
-use crate::Vec2Index;
+use crate::div::FillChar;
+use crate::div::BorderChar;
 
 use termion::cursor::Goto;
 use termion::raw::RawTerminal;
@@ -19,8 +20,6 @@ use termion::terminal_size;
 
 
 
-type FillChar = char;
-type BorderChar = char;
 pub enum DrawStyle {
     Full(FillChar),
     Border(FillChar, BorderChar),
@@ -43,8 +42,8 @@ impl ShapeDrawer for RawTerminal<Stdout> {
     ) -> io::Result<()> {
         use DrawStyle::*;
         write!(self, "{}", Goto(pos.x(), pos.y()))?;
-        let (p_x, p_y) = pos;
-        let (w, h) = size;
+        let Vec2(p_x, p_y) = pos;
+        let Vec2(w, h) = size;
 
         for y in 0_u16..h {
             for x in 0_u16..w {
@@ -75,20 +74,20 @@ impl ShapeDrawer for RawTerminal<Stdout> {
         pos1: Vec2,
         pos2: Vec2,
     ) -> io::Result<()> {
-        let (x1, y1) = pos1;
-        let (x2, y2) = pos2;
+        let Vec2(x1, y1) = pos1;
+        let Vec2(x2, y2) = pos2;
         
         if y1 == y2 {
             if x1 > x2 {
-                plot_line_horz(self, &style, (x2, y2), (x1, y1))?;
+                plot_line_horz(self, &style, Vec2(x2, y2), Vec2(x1, y1))?;
             } else {
-                plot_line_horz(self, &style, (x1, y1), (x2, y2))?;
+                plot_line_horz(self, &style, Vec2(x1, y1), Vec2(x2, y2))?;
             }
         } else if x1 == x2 {
             if y1 > y2 {
-                plot_line_vert(self, &style, (x2, y2), (x1, y1))?;
+                plot_line_vert(self, &style, Vec2(x2, y2), Vec2(x1, y1))?;
             } else {
-                plot_line_vert(self, &style, (x1, y1), (x2, y2))?;
+                plot_line_vert(self, &style, Vec2(x1, y1), Vec2(x2, y2))?;
             }
         }
         
@@ -96,15 +95,15 @@ impl ShapeDrawer for RawTerminal<Stdout> {
 
         if (y2 as i32 - y1 as i32).abs() < (x2 as i32 - x1 as i32).abs() {
             if x1 > x2 {
-                plot_line_low(self, &style, (x2, y2), (x1, y1))?;
+                plot_line_low(self, &style, Vec2(x2, y2), Vec2(x1, y1))?;
             } else {
-                plot_line_low(self, &style, (x1, y1), (x2, y2))?;
+                plot_line_low(self, &style, Vec2(x1, y1), Vec2(x2, y2))?;
             }
         } else {
             if y1 > y2 {
-                plot_line_high(self, &style, (x2, y2), (x1, y1))?;
+                plot_line_high(self, &style, Vec2(x2, y2), Vec2(x1, y1))?;
             } else {
-                plot_line_high(self, &style, (x1, y1), (x2, y2))?;
+                plot_line_high(self, &style, Vec2(x1, y1), Vec2(x2, y2))?;
             }
         }
 
@@ -163,8 +162,8 @@ fn plot_line_low(
     pos1: Vec2,
     pos2: Vec2
 ) -> io::Result<()> {
-    let (x1, y1) = pos1;
-    let (x2, y2) = pos2;
+    let Vec2(x1, y1) = pos1;
+    let Vec2(x2, y2) = pos2;
 
     let (dx, mut dy) = (x2 as i32 - x1 as i32, y2 as i32 - y1 as i32);
     let mut yi = 1i32;
@@ -176,7 +175,7 @@ fn plot_line_low(
     let mut d = 2 * dy - dx;
     let mut y = y1;
 
-    let mut last_point = (0, 0);
+    let mut last_point = Vec2(0, 0);
     for x in x1..=x2 {
         plot(out, style, &mut last_point, x, y)?;
         if d > 0 {
@@ -197,8 +196,8 @@ fn plot_line_high(
     pos1: Vec2,
     pos2: Vec2
 ) -> io::Result<()> {
-    let (x1, y1) = pos1;
-    let (x2, y2) = pos2;
+    let Vec2(x1, y1) = pos1;
+    let Vec2(x2, y2) = pos2;
 
     let (mut dx, dy) = (
         x2 as i32 - x1 as i32,
@@ -213,7 +212,7 @@ fn plot_line_high(
     let mut d = 2 * dx - dy;
     let mut x = x1;
 
-    let mut last_point = (0, 0);
+    let mut last_point = Vec2(0, 0);
     for y in y1..=y2 {
         plot(out, style, &mut last_point, x, y)?;
         if d > 0 {
@@ -234,10 +233,10 @@ fn plot_line_horz(
     pos1: Vec2,
     pos2: Vec2
 ) -> io::Result<()> {
-    let (x1, y) = pos1;
+    let Vec2(x1, y) = pos1;
     let x2 = pos2.x();
 
-    let mut last_point = (0, y);
+    let mut last_point = Vec2(0, y);
     for x in x1..=x2 {
         plot(out, style, &mut last_point, x, y)?;
         last_point.0 = x;
@@ -253,10 +252,10 @@ fn plot_line_vert(
     pos1: Vec2,
     pos2: Vec2
 ) -> io::Result<()> {
-    let (x, y1) = pos1;
+    let Vec2(x, y1) = pos1;
     let y2 = pos2.y();
 
-    let mut last_point = (x, 0);
+    let mut last_point = Vec2(x, 0);
     for y in y1..=y2 {
         plot(out, style, &mut last_point, x, y)?;
         last_point.1 = y;
