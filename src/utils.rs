@@ -1,21 +1,16 @@
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 
-
-
-
-
-
-
-
-
 #[derive(Clone, Copy, Debug, PartialEq, PartialOrd)]
 pub struct Vec2(pub u16, pub u16);
 
 impl Vec2 {
-    pub fn x(&self) -> u16 { self.0 }
-    pub fn y(&self) -> u16 { self.1 }
+    pub fn x(&self) -> u16 {
+        self.0
+    }
+    pub fn y(&self) -> u16 {
+        self.1
+    }
 }
-
 
 impl Add for Vec2 {
     type Output = Self;
@@ -45,14 +40,13 @@ impl Mul for Vec2 {
     }
 }
 
-
 impl AddAssign for Vec2 {
     fn add_assign(&mut self, other: Self) {
         self.0 += other.0;
         self.1 += other.1;
     }
 }
- 
+
 impl SubAssign for Vec2 {
     fn sub_assign(&mut self, other: Self) {
         self.0 -= other.0;
@@ -73,36 +67,3 @@ impl MulAssign for Vec2 {
         self.1 *= rhs.1;
     }
 }
-
-
-
-
-
-
-pub struct Cell {
-    pub c: char, 
-    pub style: Option<Box<str>>
-}
-
-impl From<char> for Cell {
-    fn from(c: char) -> Self { Cell {
-        c, 
-        style: None
-    }}
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

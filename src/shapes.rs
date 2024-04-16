@@ -1,45 +1,29 @@
-
-
-
-
-
-use std::io;
-use std::cmp::min;
 use std::cmp::max;
+use std::cmp::min;
+use std::io;
 use std::io::Stdout;
 use std::io::Write;
 
+use crate::widget::BorderChar;
+use crate::widget::FillChar;
 use crate::Vec2;
-use crate::div::FillChar;
-use crate::div::BorderChar;
 
 use termion::cursor::Goto;
 use termion::raw::RawTerminal;
 use termion::terminal_size;
-
-
-
 
 pub enum DrawStyle {
     Full(FillChar),
     Border(FillChar, BorderChar),
 }
 
-
-
 pub trait ShapeDrawer {
     fn draw_square(&mut self, style: DrawStyle, pos: Vec2, size: Vec2) -> io::Result<()>;
     fn draw_line(&mut self, style: DrawStyle, pos1: Vec2, pos2: Vec2) -> io::Result<()>;
 }
 
-
 impl ShapeDrawer for RawTerminal<Stdout> {
-    fn draw_square(
-        &mut self,
-        style: DrawStyle,
-        pos: Vec2,
-        size: Vec2
-    ) -> io::Result<()> {
+    fn draw_square(&mut self, style: DrawStyle, pos: Vec2, size: Vec2) -> io::Result<()> {
         use DrawStyle::*;
         write!(self, "{}", Goto(pos.x(), pos.y()))?;
         let Vec2(p_x, p_y) = pos;
@@ -54,7 +38,7 @@ impl ShapeDrawer for RawTerminal<Stdout> {
                         let c = match (x + p_x, y + p_y) {
                             (x, _) if x == p_x || x == w + p_x - 1 => b,
                             (_, y) if y == p_y || y == h + p_y - 1 => b,
-                            _ => f
+                            _ => f,
                         };
 
                         write!(self, "{}{}", Goto(x + p_x, y + p_y), c)?;
@@ -67,16 +51,10 @@ impl ShapeDrawer for RawTerminal<Stdout> {
         Ok(())
     }
 
-
-    fn draw_line(
-        &mut self,
-        style: DrawStyle,
-        pos1: Vec2,
-        pos2: Vec2,
-    ) -> io::Result<()> {
+    fn draw_line(&mut self, style: DrawStyle, pos1: Vec2, pos2: Vec2) -> io::Result<()> {
         let Vec2(x1, y1) = pos1;
         let Vec2(x2, y2) = pos2;
-        
+
         if y1 == y2 {
             if x1 > x2 {
                 plot_line_horz(self, &style, Vec2(x2, y2), Vec2(x1, y1))?;
@@ -90,8 +68,6 @@ impl ShapeDrawer for RawTerminal<Stdout> {
                 plot_line_vert(self, &style, Vec2(x1, y1), Vec2(x2, y2))?;
             }
         }
-        
-
 
         if (y2 as i32 - y1 as i32).abs() < (x2 as i32 - x1 as i32).abs() {
             if x1 > x2 {
@@ -107,23 +83,17 @@ impl ShapeDrawer for RawTerminal<Stdout> {
             }
         }
 
-    
         write!(self, "{}", Goto(1, terminal_size().unwrap().1))?;
         Ok(())
     }
 }
-
-
-
-
-
 
 fn plot(
     out: &mut RawTerminal<Stdout>,
     style: &DrawStyle,
     last_point: &mut Vec2,
     x: u16,
-    y: u16
+    y: u16,
 ) -> io::Result<()> {
     match style {
         DrawStyle::Full(c) => write!(out, "{}{}", Goto(x, y), c)?,
@@ -134,16 +104,17 @@ fn plot(
 
             if x - 1 > 0 && x - 1 != last_point.x() {
                 output.push_str(&format!("{}{}", Goto(x - 1, y), b))
-            } if x + 1 < w && x + 1 != last_point.x() {
+            }
+            if x + 1 < w && x + 1 != last_point.x() {
                 output.push_str(&format!("{}{}", Goto(x + 1, y), b))
             }
 
             if y - 1 > 0 && y - 1 != last_point.y() {
                 output.push_str(&format!("{}{}", Goto(x, y - 1), b))
-            } if y + 1 < h && y + 1 != last_point.y() {
+            }
+            if y + 1 < h && y + 1 != last_point.y() {
                 output.push_str(&format!("{}{}", Goto(x, y + 1), b))
             }
-
 
             last_point.0 = x;
             last_point.1 = y;
@@ -154,13 +125,11 @@ fn plot(
     Ok(())
 }
 
-
-
 fn plot_line_low(
     out: &mut RawTerminal<Stdout>,
     style: &DrawStyle,
     pos1: Vec2,
-    pos2: Vec2
+    pos2: Vec2,
 ) -> io::Result<()> {
     let Vec2(x1, y1) = pos1;
     let Vec2(x2, y2) = pos2;
@@ -189,20 +158,16 @@ fn plot_line_low(
     Ok(())
 }
 
-
 fn plot_line_high(
     out: &mut RawTerminal<Stdout>,
     style: &DrawStyle,
     pos1: Vec2,
-    pos2: Vec2
+    pos2: Vec2,
 ) -> io::Result<()> {
     let Vec2(x1, y1) = pos1;
     let Vec2(x2, y2) = pos2;
 
-    let (mut dx, dy) = (
-        x2 as i32 - x1 as i32,
-        y2 as i32 - y1 as i32
-    );
+    let (mut dx, dy) = (x2 as i32 - x1 as i32, y2 as i32 - y1 as i32);
     let mut xi = 1i32;
 
     if dx < 0 {
@@ -226,12 +191,11 @@ fn plot_line_high(
     Ok(())
 }
 
-
 fn plot_line_horz(
     out: &mut RawTerminal<Stdout>,
     style: &DrawStyle,
     pos1: Vec2,
-    pos2: Vec2
+    pos2: Vec2,
 ) -> io::Result<()> {
     let Vec2(x1, y) = pos1;
     let x2 = pos2.x();
@@ -245,12 +209,11 @@ fn plot_line_horz(
     Ok(())
 }
 
-
 fn plot_line_vert(
     out: &mut RawTerminal<Stdout>,
     style: &DrawStyle,
     pos1: Vec2,
-    pos2: Vec2
+    pos2: Vec2,
 ) -> io::Result<()> {
     let Vec2(x, y1) = pos1;
     let y2 = pos2.y();
@@ -261,36 +224,5 @@ fn plot_line_vert(
         last_point.1 = y;
     }
 
-
     Ok(())
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
